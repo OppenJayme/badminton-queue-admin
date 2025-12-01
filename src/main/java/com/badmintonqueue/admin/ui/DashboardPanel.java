@@ -20,7 +20,7 @@ public class DashboardPanel extends JPanel {
         refreshTotals();
     }
 
-    private void refreshTotals() {
+    public void refreshTotals() {
         SwingWorker<Void, Void> worker = new SwingWorker<>() {
             TotalsDto totals;
 
@@ -44,5 +44,9 @@ public class DashboardPanel extends JPanel {
             }
         };
         worker.execute();
+    }
+
+    public void resetForLogout() {
+        totalsLabel.setText("Logged out. Please login.");
     }
 }

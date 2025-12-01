@@ -10,4 +10,8 @@ public class HistoryPanel extends JPanel {
         setLayout(new BorderLayout());
         add(new JLabel("History (read-only placeholder)", SwingConstants.CENTER), BorderLayout.CENTER);
     }
+
+    public void resetForLogout() {
+        // placeholder hook; nothing to reset yet
+    }
 }

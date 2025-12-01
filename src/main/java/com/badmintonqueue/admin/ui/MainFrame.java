@@ -11,6 +11,10 @@ public class MainFrame extends JFrame {
     private final JPanel content = new JPanel(cardLayout);
     private final StatusBar statusBar = new StatusBar();
     private final ApiClient api;
+    private final DashboardPanel dashboardPanel;
+    private final HistoryPanel historyPanel;
+    private final Sidebar sidebar;
+    private final JPanel lockedPanel = new JPanel(new BorderLayout());
 
     public MainFrame() {
         super("Badminton Queue Admin");
@@ -20,18 +24,71 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        Sidebar sidebar = new Sidebar(this::showCard);
+        sidebar = new Sidebar(this::showCard);
         add(sidebar, BorderLayout.WEST);
 
-        content.add(new DashboardPanel(api, statusBar), "Dashboard");
-        content.add(new HistoryPanel(api, statusBar), "History");
+        lockedPanel.add(new JLabel("Please log in to continue.", SwingConstants.CENTER), BorderLayout.CENTER);
+
+        dashboardPanel = new DashboardPanel(api, statusBar);
+        historyPanel = new HistoryPanel(api, statusBar);
+
+        content.add(lockedPanel, "Locked");
+        content.add(dashboardPanel, "Dashboard");
+        content.add(historyPanel, "History");
         add(content, BorderLayout.CENTER);
         add(statusBar, BorderLayout.SOUTH);
 
-        showCard("Dashboard");
+        statusBar.setOnLogout(() -> {
+            api.clearAuth();
+            statusBar.info("Logged out");
+            dashboardPanel.resetForLogout();
+            historyPanel.resetForLogout();
+            sidebar.setButtonsEnabled(false);
+            statusBar.setLogoutEnabled(false);
+            showCard("Locked");
+            setVisible(false);
+            promptLogin(true);
+        });
+
+        sidebar.setButtonsEnabled(false);
+        statusBar.setLogoutEnabled(false);
+        showCard("Locked");
+        setVisible(false);
+        promptLogin(false);
     }
 
     private void showCard(String name) {
         cardLayout.show(content, name);
+    }
+
+    private void promptLogin(boolean exitOnCancel) {
+        LoginDialog dlg = new LoginDialog(this);
+        while (true) {
+            dlg.setLocationRelativeTo(null);
+            dlg.setVisible(true);
+            if (!dlg.isSuccess()) {
+                if (exitOnCancel) {
+                    dispose();
+                    System.exit(0);
+                }
+                return;
+            }
+            try {
+                boolean ok = api.login(dlg.getEmail(), dlg.getPassword());
+                if (ok) {
+                    statusBar.info("Logged in as " + api.getDisplayName() + " (" + api.getRole() + ")");
+                    dashboardPanel.refreshTotals();
+                    sidebar.setButtonsEnabled(true);
+                    statusBar.setLogoutEnabled(true);
+                    showCard("Dashboard");
+                    setVisible(true);
+                    break;
+                } else {
+                    JOptionPane.showMessageDialog(this, "Login failed", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Login error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }

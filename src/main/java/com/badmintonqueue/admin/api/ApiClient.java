@@ -17,12 +17,32 @@ public class ApiClient {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String baseUrl;
     private String token;
+    private String displayName;
+    private String role;
 
     public ApiClient(Config config) {
         this.baseUrl = config.getApiBaseUrl();
         this.client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
+    }
+
+    public boolean hasToken() {
+        return token != null && !token.isBlank();
+    }
+
+    public void clearAuth() {
+        this.token = null;
+        this.displayName = null;
+        this.role = null;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getRole() {
+        return role;
     }
 
     public boolean login(String email, String password) throws IOException, InterruptedException {
@@ -38,12 +58,15 @@ public class ApiClient {
         if (res.statusCode() >= 200 && res.statusCode() < 300) {
             ObjectNode node = (ObjectNode) mapper.readTree(res.body());
             this.token = Optional.ofNullable(node.get("token")).map(v -> v.asText()).orElse(null);
+            this.displayName = Optional.ofNullable(node.get("displayName")).map(v -> v.asText()).orElse(null);
+            this.role = Optional.ofNullable(node.get("role")).map(v -> v.asText()).orElse(null);
             return token != null;
         }
         return false;
     }
 
     public Optional<TotalsDto> getTotals() {
+        if (!hasToken()) return Optional.empty();
         try {
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/api/admin/totals"))
