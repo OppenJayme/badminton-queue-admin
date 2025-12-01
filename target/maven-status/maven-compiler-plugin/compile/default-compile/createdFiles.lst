@@ -1,8 +1,11 @@
 com\badmintonqueue\admin\ui\DashboardPanel.class
 com\badmintonqueue\admin\App.class
 com\badmintonqueue\admin\ui\HistoryPanel.class
+com\badmintonqueue\admin\api\AdminMatchDto.class
 com\badmintonqueue\admin\ui\Sidebar.class
 com\badmintonqueue\admin\ui\MainFrame.class
+com\badmintonqueue\admin\ui\HistoryPanel$1.class
+com\badmintonqueue\admin\ui\HistoryPanel$HistoryTableModel.class
 com\badmintonqueue\admin\ui\LoginDialog.class
 com\badmintonqueue\admin\ui\DashboardPanel$1.class
 com\badmintonqueue\admin\api\TotalsDto.class

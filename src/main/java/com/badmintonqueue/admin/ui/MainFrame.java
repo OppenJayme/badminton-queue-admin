@@ -15,6 +15,7 @@ public class MainFrame extends JFrame {
     private final HistoryPanel historyPanel;
     private final Sidebar sidebar;
     private final JPanel lockedPanel = new JPanel(new BorderLayout());
+    private final JButton refreshButton = new JButton("Refresh");
 
     public MainFrame() {
         super("Badminton Queue Admin");
@@ -32,6 +33,14 @@ public class MainFrame extends JFrame {
         dashboardPanel = new DashboardPanel(api, statusBar);
         historyPanel = new HistoryPanel(api, statusBar);
 
+        var toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        refreshButton.addActionListener(e -> {
+            dashboardPanel.refreshTotals();
+            historyPanel.refreshHistory();
+        });
+        toolbar.add(refreshButton);
+        add(toolbar, BorderLayout.NORTH);
+
         content.add(lockedPanel, "Locked");
         content.add(dashboardPanel, "Dashboard");
         content.add(historyPanel, "History");
@@ -45,6 +54,7 @@ public class MainFrame extends JFrame {
             historyPanel.resetForLogout();
             sidebar.setButtonsEnabled(false);
             statusBar.setLogoutEnabled(false);
+            refreshButton.setEnabled(false);
             showCard("Locked");
             setVisible(false);
             promptLogin(true);
@@ -52,6 +62,7 @@ public class MainFrame extends JFrame {
 
         sidebar.setButtonsEnabled(false);
         statusBar.setLogoutEnabled(false);
+        refreshButton.setEnabled(false);
         showCard("Locked");
         setVisible(false);
         promptLogin(false);
@@ -78,8 +89,10 @@ public class MainFrame extends JFrame {
                 if (ok) {
                     statusBar.info("Logged in as " + api.getDisplayName() + " (" + api.getRole() + ")");
                     dashboardPanel.refreshTotals();
+                    historyPanel.refreshHistory();
                     sidebar.setButtonsEnabled(true);
                     statusBar.setLogoutEnabled(true);
+                    refreshButton.setEnabled(true);
                     showCard("Dashboard");
                     setVisible(true);
                     break;

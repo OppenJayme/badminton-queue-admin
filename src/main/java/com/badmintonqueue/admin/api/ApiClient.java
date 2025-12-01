@@ -82,4 +82,24 @@ public class ApiClient {
         }
         return Optional.empty();
     }
+
+    public Optional<java.util.List<AdminMatchDto>> getHistory(int take) {
+        if (!hasToken()) return Optional.empty();
+        try {
+            var req = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/api/admin/history?take=" + take))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + token)
+                    .GET()
+                    .build();
+            var res = client.send(req, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() >= 200 && res.statusCode() < 300) {
+                var listType = mapper.getTypeFactory().constructCollectionType(java.util.List.class, AdminMatchDto.class);
+                java.util.List<AdminMatchDto> items = mapper.readValue(res.body(), listType);
+                return Optional.ofNullable(items);
+            }
+        } catch (Exception ignored) {
+        }
+        return Optional.empty();
+    }
 }
